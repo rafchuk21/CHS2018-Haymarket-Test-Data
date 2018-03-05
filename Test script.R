@@ -1,7 +1,7 @@
 sheet = Haymarket_Week_1_Data
 id = "Team Number"
 matchCount = "Number of Matches"
-stats = c("Crossed Line", "A switch success", "A scale success", "Red Switch Delivered", "Blue Switch Delivered", "Scale Delivered", "Vault Cubes")
+stats = c("Crossed Line", "A switch success", "A scale success", "Red Switch Delivered", "Blue Switch Delivered", "Scale Delivered", "Vault Cubes", "Scale Dropped")
 
 #Pull wanted data from sheet
 pullData <- function() {
@@ -49,7 +49,7 @@ mergeData <- function() {
 }
 
 #Averages the values per match. averageValue would be the number of matches, and dataRange is a list containing the names of the columns to average.
-averageData <- function(dataMatrix, averageValue, dataRange) {
+averageData <- function(dataMatrix, averageValue = matchCount, dataRange = stats) {
   temp <- dataMatrix
   for (i in 1:length(temp[,1])) {
     for (j in dataRange) {
@@ -57,4 +57,24 @@ averageData <- function(dataMatrix, averageValue, dataRange) {
     }
   }
   return(temp)
+}
+
+#Gets a data column and sorts teams based on their performance in that column
+sortTeams<- function(dataMatrix, dataColumn, sortingCriterion = dataColumn, ascending = FALSE) {
+  relevantData <- cbind(dataMatrix[,id], dataMatrix[,dataColumn])
+  colnames(relevantData) <- c(id, dataColumn)
+  relevantData <- relevantData[order(relevantData[,sortingCriterion], decreasing = !ascending),]
+  return(relevantData)
+}
+
+#Sums columns and adds the result to the input matrix
+sumColumns <- function(dataMatrix, sumColumns, sumColumnName) {
+  newCol = dataMatrix[,sumColumns[1]]
+  for (i in 2:length(sumColumns)) {
+    newCol = newCol + dataMatrix[, sumColumns[i]]
+  }
+  returnMatrix <- dataMatrix
+  returnMatrix <- cbind(dataMatrix, newCol)
+  colnames(returnMatrix) <- setdiff(c(colnames(returnMatrix), sumColumnName), "newCol")
+  return(returnMatrix)
 }
