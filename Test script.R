@@ -87,7 +87,7 @@ dualBarGraph <- function(dataMatrix, upData, downData, title = c(upData, downDat
   negatedData <- -1*dataMatrix[,downData]
   barplot(t(dataMatrix[,upData]),
           main=title, xlab = xlabel, ylab = ylabel, names.arg = xnames, col = colorsUp,
-          las = 2, yaxt = "n", ylim = ybounds)
+          las = 2, yaxt = "n", ylim = ybounds, beside=FALSE)
   barplot(t(negatedData), add=T, col=colorsDown, yaxt = "n")
   axis(side=2, at=yticks)
   legend(legendLocation, legend = legendText, fill = c(colorsUp, colorsDown))
