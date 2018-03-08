@@ -87,13 +87,13 @@ dualBarGraph <- function(dataMatrix, upData, downData, title = c(upData, downDat
   negatedData <- -1*dataMatrix[,downData]
   barplot(t(dataMatrix[,upData]),
           main=title, xlab = xlabel, ylab = ylabel, names.arg = xnames, col = colorsUp,
-          las = 2, yaxt = "n", ylim = ybounds)
+          las = 2, yaxt = "n", ylim = ybounds, beside=FALSE)
   barplot(t(negatedData), add=T, col=colorsDown, yaxt = "n")
   axis(side=2, at=yticks)
   legend(legendLocation, legend = legendText, fill = c(colorsUp, colorsDown))
 }
 
-dualBarGraph(scaleSwitchData, c("A scale success", "Scale Delivered"), c("A switch success", "Switch Delivered"),
-             ylabel = "# of Cubes", colorsUp = c("goldenrod1", "red"), colorsDown = c("cyan", "blue"),
-             legendText = c("Autonomous Scale", "Teleop Scale", "Autonomous Switch", "Teleop Switch"),
-             ybounds = c(-5,5), title = "Overall Average Cubes Delivered to Switch and Scale per Team")
+#dualBarGraph(scaleSwitchData, c("A scale success", "Scale Delivered"), c("A switch success", "Switch Delivered"),
+ #            ylabel = "# of Cubes", colorsUp = c("goldenrod1", "red"), colorsDown = c("cyan", "blue"),
+  #           legendText = c("Autonomous Scale", "Teleop Scale", "Autonomous Switch", "Teleop Switch"),
+   #          ybounds = c(-5,5), title = "Overall Average Cubes Delivered to Switch and Scale per Team")
