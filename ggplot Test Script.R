@@ -17,9 +17,10 @@ AND <- function(...) {
 }
 
 cleanData <- function(dataSet = originalEventDataSheet, relevantData) {
-  ret = dataSet[,unique(c(relevantData, excludeRow))]
+  print(relevantData)
+  ret = dataSet[,relevantData]
   ret <- cleanNA(ret)
-  colnames(ret) <- gsub(x = colnames(ret), pattern = " ", replacement = "")
+  #colnames(ret) <- gsub(x = colnames(ret), pattern = " ", replacement = "")
   return(ret)
 }
 
@@ -29,8 +30,6 @@ excludeRows <- function(dataSet, dataExclusionConditions) {
   i <- 1
   while(i <= nrow(ret)) {
     for (condition in dataExclusionConditions) {
-      print(i)
-      print(condition)
       if (ret[i,condition] > 0) {
         print("cond true")
         ret <- ret[-1*i,]
@@ -57,6 +56,60 @@ cleanNA <- function(inputData) {
 }
 
 sortData <- function(dataSet, sortingCriteria, ascending = TRUE) {
-  sortingCriteria <- gsub(x = sortingCriteria, pattern = " ", replacement = "")
+  #sortingCriteria <- gsub(x = sortingCriteria, pattern = " ", replacement = "")
   return(dataSet[do.call("order", c(dataSet[sortingCriteria], decreasing = !ascending)),])
+}
+
+mainDataFilter <- function(data = originalEventDataSheet, id = "Team Number", relevant = colnames(originalEventDataSheet),
+                           sorting = c("Team Number", "Match Number"), exclusion = c("No Show", "Dead"),
+                           asc = TRUE) {
+  
+  relevant = unique(c(relevant, sorting, exclusion))
+  
+  ret <- data #start
+  ret <- cleanNA(ret) #set NA to 0
+  ret <- cleanData(dataSet = ret, relevantData = relevant) #only keep relevant columns
+  ret <- sortData(dataSet = ret, sortingCriteria = sorting, ascending = asc) #sort data by given columns (Team Number, Match Number)
+  ret <- excludeRows(dataSet = ret, dataExclusionConditions = exclusion) #excludes rows with given conditions (No show, Dead, etc)
+  ret <- mergeRows(dataSet = ret, identifier = id, aggregateMethod)
+  return(ret)
+}
+
+quartile <- function(dataSet, numQuartile = 3) {
+  if (numQuartile == 0) {
+    return(min(dataSet))
+  } else if (numQuartile == 1) {
+    return(summary(dataSet)[2])
+  } else if (numQuartile == 2) {
+    return(median(dataSet))
+  } else if (numQuartile == 3) {
+    return(summary(dataSet)[5])
+  } else if (numQuartile == 4) {
+    return(max(dataSet))
+  }
+}
+
+numListToString <- function(dataSet) {
+  for (i in 1:length(dataSet)) {
+    dataSet[i] <- toString(dataSet[i])
+    while(nchar(dataSet[i]) < 4) {
+      dataSet[i] <- paste("0", dataSet[i], sep = "")
+    }
+  }
+  return (dataSet)
+}
+
+dualBarGraph <- function(dataSet, idColumn = "Team Numiber", upColumns, downColumns, sortColumns, xlabel = idColumn,
+                         ylabel = "# Cubes", title, ylimits = c(min(-1*downColumns), max(upColumns)),
+                         xlimits = c(min(dataSet[,idColumn]), max(dataSet[,idColumn])),
+                         legendText = c(upColumns, downColumns), yticks = ybounds[1]:ybounds[2]) {
+  basePlot <- ggplot(cdt1, aes(x = factor(numListToString(dataSet[,idColumn]),
+                                          levels = numListToString[dataSet[, idColumn]])))
+  dataSet[,downColumns] = -1 * dataSet[,downColumns]
+  filteredDataSet <- mainDataFilter(data = dataSet, relevant = unique(c(idColumn, upColumns, downColumns, sortColumns)),
+                                    sorting = sortColumns, asc = FALSE)
+  print(filteredDataSet)
+  filteredDataSet[, idColumn] <- numListToString(filteredDataSet[, idColumn])
+  meltedFilteredData <- melt(filteredDataSet, id.vars = idColumn)
+  
 }
