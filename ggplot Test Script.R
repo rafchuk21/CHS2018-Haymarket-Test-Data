@@ -17,7 +17,7 @@ AND <- function(...) {
 }
 
 cleanData <- function(dataSet = originalEventDataSheet, relevantData) {
-  print(relevantData)
+  ##print(relevantData)
   ret = dataSet[,relevantData]
   ret <- cleanNA(ret)
   #colnames(ret) <- gsub(x = colnames(ret), pattern = " ", replacement = "")
@@ -31,7 +31,7 @@ excludeRows <- function(dataSet, dataExclusionConditions) {
   while(i <= nrow(ret)) {
     for (condition in dataExclusionConditions) {
       if (ret[i,condition] > 0) {
-        print("cond true")
+        #print("cond true")
         ret <- ret[-1*i,]
         i <- i-1
         break
@@ -60,7 +60,7 @@ sortData <- function(dataSet, sortingCriteria, ascending = TRUE) {
   return(dataSet[do.call("order", c(dataSet[sortingCriteria], decreasing = !ascending)),])
 }
 
-mainDataFilter <- function(data = originalEventDataSheet, id = "Team Number", relevant = colnames(originalEventDataSheet),
+mainDataFilter <- function(data = originalEventDataSheet, id = "Team Number", relevant = relevantStatistics,
                            sorting = c("Team Number", "Match Number"), exclusion = c("No Show", "Dead"),
                            asc = TRUE) {
   
@@ -71,8 +71,12 @@ mainDataFilter <- function(data = originalEventDataSheet, id = "Team Number", re
   ret <- cleanData(dataSet = ret, relevantData = relevant) #only keep relevant columns
   ret <- sortData(dataSet = ret, sortingCriteria = sorting, ascending = asc) #sort data by given columns (Team Number, Match Number)
   ret <- excludeRows(dataSet = ret, dataExclusionConditions = exclusion) #excludes rows with given conditions (No show, Dead, etc)
-  ret <- mergeRows(dataSet = ret, identifier = id, aggregateMethod)
+  #ret <- mergeRows(dataSet = ret, identifier = id, aggregateMethod)
   return(ret)
+}
+
+returnInput <- function(input) {
+  return(input)
 }
 
 quartile <- function(dataSet, numQuartile = 3) {
@@ -99,7 +103,34 @@ numListToString <- function(dataSet) {
   return (dataSet)
 }
 
-dualBarGraph <- function(dataSet, idColumn = "Team Numiber", upColumns, downColumns, sortColumns, xlabel = idColumn,
+sumColumns <- function(dataSet, columnsToSum, newColName) {
+  newCol <- dataSet[,columnsToSum[1]]
+  for (i in 2:length(columnsToSum)) {
+    newCol <- newCol + dataSet[,columnsToSum[i]]
+  }
+  dataSet <- cbind(dataSet, newCol)
+  colnames(dataSet) <- setdiff(c(colnames(dataSet), newColName), "newCol")
+  return(dataSet)
+}
+
+sumManyColumns <- function(dataSet, columnsToSumSet, newColNameSet) {
+  #print(columnsToSumSet)
+  #print(newColNameSet)
+  if (ncol(columnsToSumSet) != 2) {
+    columnsToSumSet <- t(columnsToSumSet)
+  }
+  
+  if (nrow(columnsToSumSet) != length(newColNameSet)) {
+    stop("inconsistent input lengths")
+  }
+
+  for (i in 1:nrow(columnsToSumSet)) {
+    dataSet <- cbind(sumColumns(dataSet, columnsToSum = columnsToSumSet[i,], newColName = newColNameSet[i]))
+  }
+  return (dataSet)
+}
+
+dualBarGraph <- function(dataSet, idColumn = "Team Number", upColumns, downColumns, sortColumns, xlabel = idColumn,
                          ylabel = "# Cubes", title, ylimits = c(min(-1*downColumns), max(upColumns)),
                          xlimits = c(min(dataSet[,idColumn]), max(dataSet[,idColumn])),
                          legendText = c(upColumns, downColumns), yticks = ybounds[1]:ybounds[2]) {
@@ -108,7 +139,7 @@ dualBarGraph <- function(dataSet, idColumn = "Team Numiber", upColumns, downColu
   dataSet[,downColumns] = -1 * dataSet[,downColumns]
   filteredDataSet <- mainDataFilter(data = dataSet, relevant = unique(c(idColumn, upColumns, downColumns, sortColumns)),
                                     sorting = sortColumns, asc = FALSE)
-  print(filteredDataSet)
+  #print(filteredDataSet)
   filteredDataSet[, idColumn] <- numListToString(filteredDataSet[, idColumn])
   meltedFilteredData <- melt(filteredDataSet, id.vars = idColumn)
   
