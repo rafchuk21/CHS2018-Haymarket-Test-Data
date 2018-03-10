@@ -70,7 +70,7 @@ mainDataFilter <- function(data = originalEventDataSheet, id = "Team Number", re
   ret <- cleanNA(ret) #set NA to 0
   ret <- cleanData(dataSet = ret, relevantData = relevant) #only keep relevant columns
   ret <- sortData(dataSet = ret, sortingCriteria = sorting, ascending = asc) #sort data by given columns (Team Number, Match Number)
-  ret <- excludeRows(dataSet = ret, dataExclusionConditions = exclusion) #excludes rows with given conditions (No show, Dead, etc)
+  #ret <- excludeRows(dataSet = ret, dataExclusionConditions = exclusion) #excludes rows with given conditions (No show, Dead, etc)
   #ret <- mergeRows(dataSet = ret, identifier = id, aggregateMethod)
   return(ret)
 }
